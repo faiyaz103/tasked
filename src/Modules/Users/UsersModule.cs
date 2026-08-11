@@ -15,7 +15,7 @@ public static class UserModule
     {   
         // Register PostgreSQL DbContext
         services.AddDbContext<UsersDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")).UseSnakeCaseNamingConvention());
 
         // Register Services
         services.AddScoped<IUserService, UserService>();

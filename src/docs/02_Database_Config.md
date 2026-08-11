@@ -119,3 +119,29 @@ app.Run();
 dotnet ef migrations add AddUsersTable --project src/Modules/Users/Users.csproj --startup-project src/Host/WebApi/WebApi.csproj
 dotnet ef database update --project src/Modules/Users/Users.csproj --startup-project src/Host/WebApi/WebApi.csproj
 ```
+---
+### Step 6: Revert the Database Schema
+- To roll back the database completely (remove all applied migrations):
+```
+dotnet ef database update 0 --project src/Modules/Users/Users.csproj --startup-project src/Host/WebApi/WebApi.csproj
+```
+- To roll back to a specific previous migration:
+```
+dotnet ef database update <PreviousMigrationName> --project src/Modules/Users/Users.csproj --startup-project src/Host/WebApi/WebApi.csproj
+```
+---
+### Step 7: Delete the Migration Files from Code
+```
+dotnet ef migrations remove --project src/Modules/Users/Users.csproj --startup-project src/Host/WebApi/WebApi.csproj
+```
+### Make EF Core use standard PostgreSQL snake_case (Recommended)
+- Install the Naming Conventions package:
+```
+dotnet add src/Modules/Users/Users.csproj package EFCore.NamingConventions
+```
+- Enable it in UserModule.cs:
+```csharp
+services.AddDbContext<UsersDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+           .UseSnakeCaseNamingConvention()); // <-- Add this
+```
