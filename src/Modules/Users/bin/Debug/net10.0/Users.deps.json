@@ -8,12 +8,25 @@
     ".NETCoreApp,Version=v10.0": {
       "Users/1.0.0": {
         "dependencies": {
+          "EFCore.NamingConventions": "10.0.1",
           "FluentValidation.DependencyInjectionExtensions": "12.1.1",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.3",
           "Shared.Infra": "1.0.0"
         },
         "runtime": {
           "Users.dll": {}
+        }
+      },
+      "EFCore.NamingConventions/10.0.1": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.4",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.4"
+        },
+        "runtime": {
+          "lib/net10.0/EFCore.NamingConventions.dll": {
+            "assemblyVersion": "10.0.1.0",
+            "fileVersion": "10.0.1.0"
+          }
         }
       },
       "FluentValidation/12.1.1": {
@@ -101,6 +114,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "EFCore.NamingConventions/10.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Xs5k8XfNKPkkQSkGmZkmDI1je0prLTdxse+s8PgTFZxyBrlrTLzTBUTVJtQKSsbvu4y+luAv8DdtO5SALJE++A==",
+      "path": "efcore.namingconventions/10.0.1",
+      "hashPath": "efcore.namingconventions.10.0.1.nupkg.sha512"
     },
     "FluentValidation/12.1.1": {
       "type": "package",
