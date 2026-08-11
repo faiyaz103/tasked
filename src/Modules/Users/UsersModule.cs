@@ -22,7 +22,7 @@ public static class UserModule
 
         // Register Validators
         // Registers all FluentValidation validators inside the Users assembly
-        services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
+        services.AddValidatorsFromAssemblyContaining<CreateProfileRequestValidator>();
         return services;
     }
 }
