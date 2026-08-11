@@ -9,9 +9,9 @@ namespace Users.Controllers;
 public class UsersController: ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly IValidator<CreateUserRequest> _validator;
+    private readonly IValidator<CreateProfileRequest> _validator;
 
-    public UsersController(IUserService userService, IValidator<CreateUserRequest> validator)
+    public UsersController(IUserService userService, IValidator<CreateProfileRequest> validator)
     {
         _userService = userService;
         _validator = validator;
@@ -24,8 +24,8 @@ public class UsersController: ControllerBase
         return Ok(new {Message = message});
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+    [HttpPost("profile")]
+    public async Task<IActionResult> CreateProfile([FromBody] CreateProfileRequest request)
     {
         // 1. Validate incoming request DTO
         var validationResult = await _validator.ValidateAsync(request);
@@ -37,10 +37,10 @@ public class UsersController: ControllerBase
         try
         {
             // 2. Execute business logic
-            var result = await _userService.CreateUserAsync(request);
+            var (id, responseData) = await _userService.CreateProfileAsync(request);
 
             // 3. Return 201 Created status with location header
-            return CreatedAtAction(nameof(GetUserById), new { id = result.Id }, result);
+            return CreatedAtAction(nameof(GetProfileById), new { id }, responseData);
         }
         catch (InvalidOperationException ex)
         {
@@ -49,13 +49,13 @@ public class UsersController: ControllerBase
         }
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetUserById(Guid id)
+    [HttpGet("profile/{id:guid}")]
+    public async Task<IActionResult> GetProfileById(Guid id)
     {
-        var user = await _userService.GetByIdAsync(id);
+        var user = await _userService.GetProfileAsync(id);
         if (user == null)
         {
-            return NotFound(new { message = "User not found." });
+            return NotFound(new { message = "Profile not found." });
         }
 
         return Ok(user);

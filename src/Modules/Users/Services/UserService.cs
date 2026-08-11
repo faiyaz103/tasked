@@ -7,8 +7,9 @@ namespace Users.Services;
 public interface IUserService
 {
     string GetHelloMessage();
-    Task<UserResponse> CreateUserAsync(CreateUserRequest request);
-    Task<UserResponse?> GetByIdAsync(Guid id);
+
+    Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
+    Task<ProfileRespone?> GetProfileAsync(Guid id);
 }
 
 public class UserService: IUserService
@@ -24,36 +25,55 @@ public class UserService: IUserService
         return "Hello from .NET !";
     }
 
-    public async Task<UserResponse> CreateUserAsync(CreateUserRequest request)
+    // -------------------Profile----------------
+    // create
+    public async Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request)
     {
-        // validate email
-        var emailExists = await _dbContext.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower());
-        if (emailExists)
+        // validate phone
+        var phoneExists = await _dbContext.Profiles.AnyAsync(
+            u => u.Phone == request.phone
+        );
+        if (phoneExists)
         {
-            throw new InvalidOperationException("Email already exists");
+            throw new InvalidOperationException("Phone already exists");
         }
 
         // map dto to entity
-        var user = new User
+        var profile = new Profile
         {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Email = request.Email,
-            CreatedAt = DateTime.UtcNow
+            FirstName = request.firstName,
+            LastName = request.lastName,
+            Phone = request.phone,
+            Gender = request.gender
         };
 
-        // save to postgres
-        _dbContext.Users.Add(user);
+        // create entity
+        _dbContext.Profiles.Add(profile);
+
+        // save to db
         await _dbContext.SaveChangesAsync();
 
-        return new UserResponse(user.Id, user.Name, user.Email, user.CreatedAt);
+        var profileRespone = new ProfileRespone(
+            profile.FirstName,
+            profile.LastName,
+            profile.Phone,
+            profile.Gender
+        );
+
+        return (profile.Id, profileRespone);
     }
 
-    public async Task<UserResponse?> GetByIdAsync(Guid id)
+    // get
+    public async Task<ProfileRespone?> GetProfileAsync(Guid id)
     {
-        var user = await _dbContext.Users.FindAsync(id);
-        if (user == null) return null;
+        var profile = await _dbContext.Profiles.FindAsync(id);
+        if(profile == null) return null;
 
-        return new UserResponse(user.Id, user.Name, user.Email, user.CreatedAt);
+        return new ProfileRespone(
+            profile.FirstName,
+            profile.LastName,
+            profile.Phone,
+            profile.Gender
+        );
     }
 }
