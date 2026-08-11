@@ -172,7 +172,10 @@
         },
         "runtime": {
           "bin/placeholder/Users.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },

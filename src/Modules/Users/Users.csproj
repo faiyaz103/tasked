@@ -3,6 +3,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Infra\Shared.Infra.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
