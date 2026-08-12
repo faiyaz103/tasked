@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Tasks.Dtos;
 using Tasks.Entities;
 using Tasks.Services;
 
@@ -18,6 +20,7 @@ public static class TaskModule
         services.AddScoped<ITaskService, TaskService>();
 
         // reg validators
+        services.AddValidatorsFromAssemblyContaining<CreateTaskValidator>();
 
         return services;
 
