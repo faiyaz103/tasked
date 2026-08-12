@@ -1,0 +1,16 @@
+F:\tasked\src\Modules\Tasks\bin\Debug\net10.0\Tasks.deps.json
+F:\tasked\src\Modules\Tasks\bin\Debug\net10.0\Tasks.dll
+F:\tasked\src\Modules\Tasks\bin\Debug\net10.0\Tasks.pdb
+F:\tasked\src\Modules\Tasks\bin\Debug\net10.0\Shared.Infra.dll
+F:\tasked\src\Modules\Tasks\bin\Debug\net10.0\Shared.Infra.pdb
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.csproj.AssemblyReference.cache
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.GeneratedMSBuildEditorConfig.editorconfig
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.AssemblyInfoInputs.cache
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.AssemblyInfo.cs
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.csproj.CoreCompileInputs.cache
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.sourcelink.json
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.csproj.Up2Date
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.dll
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\refint\Tasks.dll
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\Tasks.pdb
+F:\tasked\src\Modules\Tasks\obj\Debug\net10.0\ref\Tasks.dll

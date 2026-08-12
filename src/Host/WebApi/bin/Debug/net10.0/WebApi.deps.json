@@ -11,6 +11,7 @@
           "Microsoft.AspNetCore.OpenApi": "10.0.10",
           "Microsoft.EntityFrameworkCore.Design": "10.0.11",
           "Shared.Infra": "1.0.0",
+          "Tasks": "1.0.0",
           "Users": "1.0.0"
         },
         "runtime": {
@@ -536,6 +537,17 @@
           }
         }
       },
+      "Tasks/1.0.0": {
+        "dependencies": {
+          "Shared.Infra": "1.0.0"
+        },
+        "runtime": {
+          "Tasks.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "Users/1.0.0": {
         "dependencies": {
           "EFCore.NamingConventions": "10.0.1",
@@ -762,6 +774,11 @@
       "hashPath": "system.composition.typedparts.9.0.0.nupkg.sha512"
     },
     "Shared.Infra/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Tasks/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

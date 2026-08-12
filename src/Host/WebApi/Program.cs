@@ -1,3 +1,4 @@
+using Tasks;
 using Users;
 using Users.Entities;
 
@@ -8,6 +9,7 @@ builder.Services.AddControllers();
 
 // register modules
 builder.Services.AddUserModule(builder.Configuration);
+builder.Services.AddTasksModule();
 
 // configure CORS (prepare for FE later)
 builder.Services.AddCors(options =>

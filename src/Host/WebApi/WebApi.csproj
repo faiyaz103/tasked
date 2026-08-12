@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.Infra\Shared.Infra.csproj" />
     <ProjectReference Include="..\..\Modules\Users\Users.csproj" />
+    <ProjectReference Include="..\..\Modules\Tasks\Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>

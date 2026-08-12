@@ -80,6 +80,12 @@ public class UserService : IUserService
 ```
 ---
 ### Step 4: Create Controller
+- Add the ASP.NET Core framework reference to your module's .csproj file to use annotator `[ApiController]`.
+```
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+```
 ```csharp
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
