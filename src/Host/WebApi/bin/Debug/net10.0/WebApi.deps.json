@@ -539,6 +539,8 @@
       },
       "Tasks/1.0.0": {
         "dependencies": {
+          "EFCore.NamingConventions": "10.0.1",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.3",
           "Shared.Infra": "1.0.0"
         },
         "runtime": {

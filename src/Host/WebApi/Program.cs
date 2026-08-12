@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 
 // register modules
 builder.Services.AddUserModule(builder.Configuration);
-builder.Services.AddTasksModule();
+builder.Services.AddTasksModule(builder.Configuration);
 
 // configure CORS (prepare for FE later)
 builder.Services.AddCors(options =>
