@@ -16,6 +16,9 @@ public class TaskGroupEntityConfig: IEntityTypeConfiguration<TaskGroup>
         .IsRequired()
         .HasMaxLength(100);
 
+        builder.Property(t=>t.ProfileId)
+        .IsRequired();
+
         builder.Property(t=>t.CreatedAt)
         .IsRequired();
 
@@ -23,5 +26,7 @@ public class TaskGroupEntityConfig: IEntityTypeConfiguration<TaskGroup>
         .IsRequired();
 
         builder.HasIndex(t=>t.Title);
+        builder.HasIndex(t=>t.ProfileId);
+
     }
 }
