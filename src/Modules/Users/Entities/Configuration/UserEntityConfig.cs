@@ -18,6 +18,10 @@ public class UserEntityConfig: IEntityTypeConfiguration<UserEntity>
         builder.HasIndex(u=>u.Email)
         .IsUnique();
 
+        builder.Property(u=>u.Password)
+        .IsRequired()
+        .HasMaxLength(256);
+
         builder.Property(u=>u.Role)
         .IsRequired()
         .HasConversion<string>()

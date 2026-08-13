@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Users.Dtos;
 using Users.Services;
@@ -9,12 +10,14 @@ namespace Users.Controllers;
 public class UsersController: ControllerBase
 {
     private readonly IUserService _userService;
-    private readonly IValidator<CreateProfileRequest> _validator;
+    private readonly IValidator<CreateProfileRequest> _profileReqValidator;
+    private readonly IValidator<CreateUserRequest> _userReqValidator;
 
-    public UsersController(IUserService userService, IValidator<CreateProfileRequest> validator)
+    public UsersController(IUserService userService, IValidator<CreateProfileRequest> profileValidator, IValidator<CreateUserRequest> userReqValidator)
     {
         _userService = userService;
-        _validator = validator;
+        _profileReqValidator = profileValidator;
+        _userReqValidator = userReqValidator;
     }
 
     [HttpGet("hello")]
@@ -24,11 +27,40 @@ public class UsersController: ControllerBase
         return Ok(new {Message = message});
     }
 
+    // -------------------User------------------
+    // create
+    [HttpPost()]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+    {
+        // 1. Validate incoming request DTO
+        var validationResult = await _userReqValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.ToDictionary());
+        }
+
+        try
+        {
+            // 2. Execute business logic
+            var responseData = await _userService.CreateUserAsync(request);
+
+            // 3. Return 201 Created status with location header
+            return StatusCode(StatusCodes.Status201Created, responseData);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Return 409 Conflict if email is taken
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    // ---------------------Profile---------------------
+    // create
     [HttpPost("profile")]
     public async Task<IActionResult> CreateProfile([FromBody] CreateProfileRequest request)
     {
         // 1. Validate incoming request DTO
-        var validationResult = await _validator.ValidateAsync(request);
+        var validationResult = await _profileReqValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.ToDictionary());

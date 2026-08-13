@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Shared.Infra.Enums;
 using Users.Dtos;
 using Users.Entities;
 
@@ -9,6 +10,7 @@ public interface IUserService
     string GetHelloMessage();
 
     Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
+    Task<string> CreateUserAsync(CreateUserRequest request);
     Task<ProfileRespone?> GetProfileAsync(Guid id);
 }
 
@@ -23,6 +25,34 @@ public class UserService: IUserService
     public string GetHelloMessage()
     {
         return "Hello from .NET !";
+    }
+
+    // -----------------User--------------------
+    // create
+    public async Task<string> CreateUserAsync(CreateUserRequest request)
+    {
+        // validate email
+        var emailExists = await _dbContext.Users.AnyAsync(u=> u.Email == request.Email);
+        if (emailExists)
+        {
+            throw new InvalidOperationException("This email already exists");
+        }
+
+        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+
+        Roles userRole = string.IsNullOrWhiteSpace(request.Role) ? Roles.User : Enum.Parse<Roles>(request.Role, ignoreCase: true);
+
+        var newUser = new UserEntity
+        {
+            Email = request.Email,
+            Password = hashedPassword,
+            Role = userRole
+        };
+
+        _dbContext.Users.Add(newUser);
+        await _dbContext.SaveChangesAsync();
+
+        return $"Registration Successful for {request.Email}";
     }
 
     // -------------------Profile----------------
