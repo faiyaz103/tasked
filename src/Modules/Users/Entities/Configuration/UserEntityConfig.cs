@@ -22,6 +22,10 @@ public class UserEntityConfig: IEntityTypeConfiguration<UserEntity>
         .IsRequired()
         .HasMaxLength(256);
 
+        builder.Property(u=>u.RefreshToken)
+        .IsRequired(false)
+        .HasColumnType("text");
+
         builder.Property(u=>u.Role)
         .IsRequired()
         .HasConversion<string>()
