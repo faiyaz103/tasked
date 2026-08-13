@@ -7,6 +7,7 @@ public class UsersDbContext : DbContext
     public UsersDbContext(DbContextOptions<UsersDbContext> options) : base(options) { }
 
     public DbSet<Profile> Profiles => Set<Profile>();
+    public DbSet<UserEntity> Users => Set<UserEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

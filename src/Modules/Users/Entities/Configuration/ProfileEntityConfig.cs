@@ -31,5 +31,11 @@ public class ProfileEntityConfig: IEntityTypeConfiguration<Profile>
         builder.HasIndex(p=>p.FirstName);
         builder.HasIndex(p=>p.LastName);
         builder.HasIndex(p=>p.Phone).IsUnique();
+
+        builder.HasOne(p=>p.User)
+        .WithOne(u=>u.Profile)
+        .HasForeignKey<Profile>(p=>p.UserId)
+        .OnDelete(DeleteBehavior.Cascade);
+
     }
 }
