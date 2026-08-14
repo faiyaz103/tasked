@@ -14,6 +14,21 @@ public record CreateUserResponse(
     string Message
 );
 
+public record SignInUserRequest(
+    string Email,
+    string Password
+);
+
+public record RotateTokenRequest(
+    string Token
+);
+
+
+public record TokenResponse(
+    string AccessToken,
+    string RefreshToken
+);
+
 public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
 {
     public CreateUserRequestValidator()
@@ -36,5 +51,21 @@ public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
         .IsEnumName(typeof(Roles), caseSensitive: false)
         .When(x => !string.IsNullOrWhiteSpace(x.Role))
         .WithMessage($"Invalid role. Acceptable values are: {string.Join(", ", Enum.GetNames(typeof(Roles)))}");
+    }
+}
+
+public class CreateUserSignInRequestValidator: AbstractValidator<SignInUserRequest>
+{
+    public CreateUserSignInRequestValidator()
+    {
+        RuleFor(x=>x.Email)
+        .NotEmpty().WithMessage("This field is required")
+        .MaximumLength(100).WithMessage("Not more than 100 chars");
+
+        RuleFor(x => x.Password)
+        .NotEmpty().WithMessage("Password is required.")
+        .MinimumLength(8).WithMessage("Password must be at least 8 characters long.")
+        .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter.")
+        .Matches("[0-9]").WithMessage("Password must contain at least one number.");
     }
 }

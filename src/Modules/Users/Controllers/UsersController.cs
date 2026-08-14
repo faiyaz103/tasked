@@ -1,6 +1,9 @@
+using System.Security.Claims;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Users.Dtos;
 using Users.Services;
 namespace Users.Controllers;
@@ -12,14 +15,22 @@ public class UsersController: ControllerBase
     private readonly IUserService _userService;
     private readonly IValidator<CreateProfileRequest> _profileReqValidator;
     private readonly IValidator<CreateUserRequest> _userReqValidator;
+    private readonly IValidator<SignInUserRequest> _userSignInReqValidator;
 
-    public UsersController(IUserService userService, IValidator<CreateProfileRequest> profileValidator, IValidator<CreateUserRequest> userReqValidator)
+    public UsersController(
+        IUserService userService, 
+        IValidator<CreateProfileRequest> profileValidator, 
+        IValidator<CreateUserRequest> userReqValidator,
+        IValidator<SignInUserRequest> userSignInReqValidator
+    )
     {
         _userService = userService;
         _profileReqValidator = profileValidator;
         _userReqValidator = userReqValidator;
+        _userSignInReqValidator = userSignInReqValidator;
     }
 
+    [Authorize(Policy = "RequireUserRole")]
     [HttpGet("hello")]
     public IActionResult GetHello()
     {
@@ -32,7 +43,6 @@ public class UsersController: ControllerBase
     [HttpPost()]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
-        // 1. Validate incoming request DTO
         var validationResult = await _userReqValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
@@ -41,16 +51,72 @@ public class UsersController: ControllerBase
 
         try
         {
-            // 2. Execute business logic
             var responseData = await _userService.CreateUserAsync(request);
 
-            // 3. Return 201 Created status with location header
             return StatusCode(StatusCodes.Status201Created, responseData);
         }
         catch (InvalidOperationException ex)
         {
-            // Return 409 Conflict if email is taken
             return Conflict(new { message = ex.Message });
+        }
+    }
+
+    // create
+    [HttpPost("login")]
+    public async Task<IActionResult> CreateUserSignIn([FromBody] SignInUserRequest request)
+    {
+        var validationResult = await _userSignInReqValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.ToDictionary());
+        }
+
+        try
+        {
+            var responseData = await _userService.CreateUserSignInAsync(request);
+
+            return StatusCode(StatusCodes.Status200OK, responseData);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [Authorize] // Critical: Only authenticated users can sign out
+    [HttpPost("signout")]
+    public async Task<IActionResult> SignOutUser()
+    {
+        // 1. Extract the User ID from the Access Token claims
+        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
+                    ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        // 2. Parse the ID and execute the sign-out logic
+        if (Guid.TryParse(userIdStr, out Guid userId))
+        {
+            await _userService.SignOutAsync(userId);
+        }
+        else
+        {
+            // If we can't parse the ID, we return 400 Bad Request
+            return BadRequest(new { Message = "Invalid user token payload." });
+        }
+
+        // 3. Return 200 OK. The frontend should handle deleting the tokens locally.
+        return Ok(new { Message = "Successfully signed out." });
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RotateTokenRequest request)
+    {
+        try
+        {
+            var tokens = await _userService.RotateTokensAsync(request);
+            return Ok(tokens);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { Message = ex.Message });
         }
     }
 
