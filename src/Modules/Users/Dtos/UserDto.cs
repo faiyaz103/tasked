@@ -19,6 +19,11 @@ public record SignInUserRequest(
     string Password
 );
 
+public record TokenResponse(
+    string AccessToken,
+    string RefreshToken
+);
+
 public class CreateUserRequestValidator: AbstractValidator<CreateUserRequest>
 {
     public CreateUserRequestValidator()

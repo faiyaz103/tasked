@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Shared.Infra.Auth;
 using Shared.Infra.Enums;
 using Users.Dtos;
 using Users.Entities;
@@ -11,17 +12,19 @@ public interface IUserService
 
     Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
-    Task<string> CreateUserSignInAsync(SignInUserRequest request);
+    Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
     Task<ProfileRespone?> GetProfileAsync(Guid id);
 }
 
 public class UserService: IUserService
 {
     private readonly UsersDbContext _dbContext;
+    private readonly ITokenService _tokenService;
 
-    public UserService(UsersDbContext dbContext)
+    public UserService(UsersDbContext dbContext, ITokenService tokenService)
     {
         _dbContext = dbContext;
+        _tokenService = tokenService;
     }
     public string GetHelloMessage()
     {
@@ -57,7 +60,7 @@ public class UserService: IUserService
     }
 
     // login
-    public async Task<string> CreateUserSignInAsync(SignInUserRequest request)
+    public async Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request)
     {
         // validate email
         var user = await _dbContext.Users.FirstOrDefaultAsync(u=> u.Email == request.Email);
@@ -72,7 +75,30 @@ public class UserService: IUserService
             throw new UnauthorizedAccessException("Invalid email or password");
         }
 
-        return $"Sign in Successful for {request.Email}";
+        // geenrate tokens concurrently
+        var accessTokenTask = Task.Run(()=>
+            _tokenService.GenerateAccessToken(user.Id, user.Email, user.Role.ToString())
+        );
+        var refreshTokenTask = Task.Run(()=>
+            _tokenService.GenerateRefreshToken(user.Id, user.Email, user.Role.ToString())
+        );
+
+        await Task.WhenAll(accessTokenTask, refreshTokenTask);
+
+        string accessToken = accessTokenTask.Result;
+        string refreshToken = refreshTokenTask.Result;
+
+        // Double hash the refresh token (CPU bound)
+        string hashedRefreshToken = await Task.Run(()=>
+            TokenSecurityHelper.DoubleHashToken(refreshToken)
+        );
+
+        // save refresh token in DB
+        user.RefreshToken = hashedRefreshToken;
+        _dbContext.Users.Update(user);
+        await _dbContext.SaveChangesAsync();
+
+        return new TokenResponse(accessToken, refreshToken);
     }
 
     // -------------------Profile----------------

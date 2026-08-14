@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Users.Dtos;
@@ -27,6 +28,7 @@ public class UsersController: ControllerBase
         _userSignInReqValidator = userSignInReqValidator;
     }
 
+    [Authorize(Policy = "RequireUserRole")]
     [HttpGet("hello")]
     public IActionResult GetHello()
     {
@@ -39,7 +41,6 @@ public class UsersController: ControllerBase
     [HttpPost()]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
-        // 1. Validate incoming request DTO
         var validationResult = await _userReqValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
@@ -48,15 +49,12 @@ public class UsersController: ControllerBase
 
         try
         {
-            // 2. Execute business logic
             var responseData = await _userService.CreateUserAsync(request);
 
-            // 3. Return 201 Created status with location header
             return StatusCode(StatusCodes.Status201Created, responseData);
         }
         catch (InvalidOperationException ex)
         {
-            // Return 409 Conflict if email is taken
             return Conflict(new { message = ex.Message });
         }
     }
@@ -65,7 +63,6 @@ public class UsersController: ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> CreateUserSignIn([FromBody] SignInUserRequest request)
     {
-        // 1. Validate incoming request DTO
         var validationResult = await _userSignInReqValidator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
@@ -74,15 +71,12 @@ public class UsersController: ControllerBase
 
         try
         {
-            // 2. Execute business logic
             var responseData = await _userService.CreateUserSignInAsync(request);
 
-            // 3. Return 201 Created status with location header
             return StatusCode(StatusCodes.Status200OK, responseData);
         }
         catch (UnauthorizedAccessException ex)
         {
-            // Return 409 Conflict if email is taken
             return Unauthorized(new { message = ex.Message });
         }
     }
