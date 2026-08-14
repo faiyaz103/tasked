@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Shared.Infra.Auth;
 using Users.Dtos;
 using Users.Services;
 namespace Users.Controllers;
@@ -61,7 +62,7 @@ public class UsersController: ControllerBase
         }
     }
 
-    // create
+    // login
     [HttpPost("login")]
     public async Task<IActionResult> CreateUserSignIn([FromBody] SignInUserRequest request)
     {
@@ -87,23 +88,17 @@ public class UsersController: ControllerBase
     [HttpPost("signout")]
     public async Task<IActionResult> SignOutUser()
     {
-        // 1. Extract the User ID from the Access Token claims
-        var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                    ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-
-        // 2. Parse the ID and execute the sign-out logic
-        if (Guid.TryParse(userIdStr, out Guid userId))
+        try
         {
+            // 1. Extract the User ID from the Access Token claims
+            Guid userId = User.ExtractUserId();
             await _userService.SignOutAsync(userId);
+            return Ok(new { Message = "Successfully signed out." });
         }
-        else
+        catch (UnauthorizedAccessException ex)
         {
-            // If we can't parse the ID, we return 400 Bad Request
-            return BadRequest(new { Message = "Invalid user token payload." });
+            return Unauthorized(new { message = ex.Message });
         }
-
-        // 3. Return 200 OK. The frontend should handle deleting the tokens locally.
-        return Ok(new { Message = "Successfully signed out." });
     }
 
     [HttpPost("refresh-token")]
