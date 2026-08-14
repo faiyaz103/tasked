@@ -26,7 +26,7 @@ public class TokenService: ITokenService
     {
         return GenerateJwt(userId, email, role, 
             _configuration["JwtSettings:RefreshSecret"]!, 
-            TimeSpan.FromDays(double.Parse(_configuration["JwtSettings:RefreshExpiresInDays"]!)));
+            TimeSpan.FromMinutes(double.Parse(_configuration["JwtSettings:RefreshExpiresInMinutes"]!)));
     }
 
     private string GenerateJwt(Guid userId, string email, string role, string secret, TimeSpan expiresIn)
@@ -52,5 +52,41 @@ public class TokenService: ITokenService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public ClaimsPrincipal ValidateRefreshToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes(_configuration["JwtSettings:RefreshSecret"]!);
+
+        // Validates signature and lifetime strictly (Throws SecurityTokenException if expired or invalid)
+        return tokenHandler.ValidateToken(token, new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = _configuration["JwtSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = _configuration["JwtSettings:Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero // Strict expiration check
+        }, out _);
+    }
+
+    // Safe helper to extract UserId even if the token's lifetime is expired
+    public Guid? ExtractUserIdFromUnvalidatedToken(string token)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+            var userIdStr = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+
+            return Guid.TryParse(userIdStr, out var userId) ? userId : null;
+        }
+        catch
+        {
+            return null; // Return null if the string isn't even a valid JWT structure
+        }
     }
 }

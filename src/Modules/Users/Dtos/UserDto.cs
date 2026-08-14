@@ -19,6 +19,11 @@ public record SignInUserRequest(
     string Password
 );
 
+public record RotateTokenRequest(
+    string Token
+);
+
+
 public record TokenResponse(
     string AccessToken,
     string RefreshToken
