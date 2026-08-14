@@ -4,6 +4,7 @@
     <Project Path="src/Host/WebApi/WebApi.csproj" />
   </Folder>
   <Folder Name="/src/Modules/">
+    <Project Path="src/Modules/Tasks/Tasks.csproj" />
     <Project Path="src/Modules/Users/Users.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
