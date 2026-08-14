@@ -12,12 +12,19 @@ public class UsersController: ControllerBase
     private readonly IUserService _userService;
     private readonly IValidator<CreateProfileRequest> _profileReqValidator;
     private readonly IValidator<CreateUserRequest> _userReqValidator;
+    private readonly IValidator<SignInUserRequest> _userSignInReqValidator;
 
-    public UsersController(IUserService userService, IValidator<CreateProfileRequest> profileValidator, IValidator<CreateUserRequest> userReqValidator)
+    public UsersController(
+        IUserService userService, 
+        IValidator<CreateProfileRequest> profileValidator, 
+        IValidator<CreateUserRequest> userReqValidator,
+        IValidator<SignInUserRequest> userSignInReqValidator
+    )
     {
         _userService = userService;
         _profileReqValidator = profileValidator;
         _userReqValidator = userReqValidator;
+        _userSignInReqValidator = userSignInReqValidator;
     }
 
     [HttpGet("hello")]
@@ -51,6 +58,32 @@ public class UsersController: ControllerBase
         {
             // Return 409 Conflict if email is taken
             return Conflict(new { message = ex.Message });
+        }
+    }
+
+    // create
+    [HttpPost("login")]
+    public async Task<IActionResult> CreateUserSignIn([FromBody] SignInUserRequest request)
+    {
+        // 1. Validate incoming request DTO
+        var validationResult = await _userSignInReqValidator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.ToDictionary());
+        }
+
+        try
+        {
+            // 2. Execute business logic
+            var responseData = await _userService.CreateUserSignInAsync(request);
+
+            // 3. Return 201 Created status with location header
+            return StatusCode(StatusCodes.Status200OK, responseData);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            // Return 409 Conflict if email is taken
+            return Unauthorized(new { message = ex.Message });
         }
     }
 

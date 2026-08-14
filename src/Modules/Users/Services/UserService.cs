@@ -11,6 +11,7 @@ public interface IUserService
 
     Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
+    Task<string> CreateUserSignInAsync(SignInUserRequest request);
     Task<ProfileRespone?> GetProfileAsync(Guid id);
 }
 
@@ -53,6 +54,25 @@ public class UserService: IUserService
         await _dbContext.SaveChangesAsync();
 
         return $"Registration Successful for {request.Email}";
+    }
+
+    // login
+    public async Task<string> CreateUserSignInAsync(SignInUserRequest request)
+    {
+        // validate email
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u=> u.Email == request.Email);
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("Invalid email or password");
+        }
+
+        bool isPassValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+        if (!isPassValid)
+        {
+            throw new UnauthorizedAccessException("Invalid email or password");
+        }
+
+        return $"Sign in Successful for {request.Email}";
     }
 
     // -------------------Profile----------------
