@@ -37,6 +37,8 @@ public class CreateProfileRequestValidator: AbstractValidator<CreateProfileReque
         .MaximumLength(20).WithMessage("Not more than 100 chars");
 
         RuleFor(x => x.gender)
-        .IsInEnum().WithMessage("Enter valid information");
+        .IsEnumName(typeof(Gender), caseSensitive: false)
+        .When(x => !string.IsNullOrWhiteSpace(x.gender))
+        .WithMessage($"Invalid gender. Acceptable values are: {string.Join(", ", Enum.GetNames(typeof(Gender)))}");;
     }
 }

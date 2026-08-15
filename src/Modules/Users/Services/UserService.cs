@@ -10,7 +10,7 @@ namespace Users.Services;
 
 public interface IUserService
 {
-    Task<ProfileRespone> CreateProfileAsync(CreateProfileRequest request);
+    Task<ProfileRespone> CreateProfileAsync(Guid id, CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
     Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
     Task<TokenResponse> RotateTokensAsync(RotateTokenRequest request);
@@ -202,8 +202,16 @@ public class UserService: IUserService
 
     // -------------------Profile----------------
     // create
-    public async Task<ProfileRespone> CreateProfileAsync(CreateProfileRequest request)
+    public async Task<ProfileRespone> CreateProfileAsync(Guid id, CreateProfileRequest request)
     {
+        
+        //  Check if user already has a profile (Enforces the 1-to-1 relationship)
+        var profileExists = await _dbContext.Profiles.AnyAsync(p => p.UserId == id);
+        if (profileExists)
+        {
+            throw new InvalidOperationException("User already has a profile.");
+        }
+
         // validate phone
         var phoneExists = await _dbContext.Profiles.AnyAsync(
             u => u.Phone == request.phone
@@ -220,6 +228,7 @@ public class UserService: IUserService
         {
             FirstName = request.firstName,
             LastName = request.lastName,
+            UserId = id,
             Phone = request.phone,
             Gender = userGender
         };

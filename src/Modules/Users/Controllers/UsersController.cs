@@ -122,10 +122,12 @@ public class UsersController: ControllerBase
             return BadRequest(validationResult.ToDictionary());
         }
 
+        Guid userId = User.ExtractUserId();
+
         try
         {
             // 2. Execute business logic
-            var responseData = await _userService.CreateProfileAsync(request);
+            var responseData = await _userService.CreateProfileAsync(userId, request);
 
             // 3. Return 201 Created status with location header
             return StatusCode(StatusCodes.Status201Created, responseData);
