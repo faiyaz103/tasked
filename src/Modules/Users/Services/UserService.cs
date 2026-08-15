@@ -10,8 +10,6 @@ namespace Users.Services;
 
 public interface IUserService
 {
-    string GetHelloMessage();
-
     Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
     Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
@@ -29,10 +27,6 @@ public class UserService: IUserService
     {
         _dbContext = dbContext;
         _tokenService = tokenService;
-    }
-    public string GetHelloMessage()
-    {
-        return "Hello from .NET !";
     }
 
     // -----------------User--------------------
@@ -121,6 +115,8 @@ public class UserService: IUserService
             await _dbContext.SaveChangesAsync();
         }
     }
+
+    // rotate tokens
     public async Task<TokenResponse> RotateTokensAsync(RotateTokenRequest request)
     {
         ClaimsPrincipal principal;

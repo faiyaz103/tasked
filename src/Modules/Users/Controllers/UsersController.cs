@@ -31,14 +31,6 @@ public class UsersController: ControllerBase
         _userSignInReqValidator = userSignInReqValidator;
     }
 
-    [Authorize(Policy = "RequireUserRole")]
-    [HttpGet("hello")]
-    public IActionResult GetHello()
-    {
-        var message = _userService.GetHelloMessage();
-        return Ok(new {Message = message});
-    }
-
     // -------------------User------------------
     // create
     [HttpPost()]
@@ -84,7 +76,8 @@ public class UsersController: ControllerBase
         }
     }
 
-    [Authorize] // Critical: Only authenticated users can sign out
+    // sign out
+    [Authorize]
     [HttpPost("signout")]
     public async Task<IActionResult> SignOutUser()
     {
@@ -101,6 +94,7 @@ public class UsersController: ControllerBase
         }
     }
 
+    // refresh tokens
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] RotateTokenRequest request)
     {
