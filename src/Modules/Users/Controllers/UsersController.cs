@@ -139,10 +139,13 @@ public class UsersController: ControllerBase
         }
     }
 
-    [HttpGet("profile/{id:guid}")]
-    public async Task<IActionResult> GetProfileById(Guid id)
+    // get
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetProfile()
     {
-        var user = await _userService.GetProfileAsync(id);
+        Guid userId = User.ExtractUserId();
+        var user = await _userService.GetProfileAsync(userId);
         if (user == null)
         {
             return NotFound(new { message = "Profile not found." });
