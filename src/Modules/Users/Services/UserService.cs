@@ -10,7 +10,7 @@ namespace Users.Services;
 
 public interface IUserService
 {
-    Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
+    Task<ProfileRespone> CreateProfileAsync(CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
     Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
     Task<TokenResponse> RotateTokensAsync(RotateTokenRequest request);
@@ -202,7 +202,7 @@ public class UserService: IUserService
 
     // -------------------Profile----------------
     // create
-    public async Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request)
+    public async Task<ProfileRespone> CreateProfileAsync(CreateProfileRequest request)
     {
         // validate phone
         var phoneExists = await _dbContext.Profiles.AnyAsync(
@@ -213,13 +213,15 @@ public class UserService: IUserService
             throw new InvalidOperationException("Phone already exists");
         }
 
+        Gender userGender = string.IsNullOrWhiteSpace(request.gender) ? Gender.Other : Enum.Parse<Gender>(request.gender, ignoreCase: true);
+
         // map dto to entity
         var profile = new Profile
         {
             FirstName = request.firstName,
             LastName = request.lastName,
             Phone = request.phone,
-            Gender = request.gender
+            Gender = userGender
         };
 
         // create entity
@@ -235,7 +237,7 @@ public class UserService: IUserService
             profile.Gender
         );
 
-        return (profile.Id, profileRespone);
+        return profileRespone;
     }
 
     // get

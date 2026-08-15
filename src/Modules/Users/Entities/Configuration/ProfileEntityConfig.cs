@@ -20,7 +20,9 @@ public class ProfileEntityConfig: IEntityTypeConfiguration<Profile>
         .HasMaxLength(100);
 
         builder.Property(p=>p.Gender)
-        .IsRequired();
+        .IsRequired()
+        .HasConversion<string>()
+        .HasMaxLength(10);
 
         builder.Property(p=>p.CreatedAt)
         .IsRequired();

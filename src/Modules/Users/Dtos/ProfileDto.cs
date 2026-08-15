@@ -8,7 +8,7 @@ public record CreateProfileRequest(
     string firstName, 
     string lastName, 
     string phone,
-    Gender gender
+    string? gender
 );
 
 // response dto

@@ -111,6 +111,7 @@ public class UsersController: ControllerBase
 
     // ---------------------Profile---------------------
     // create
+    [Authorize]
     [HttpPost("profile")]
     public async Task<IActionResult> CreateProfile([FromBody] CreateProfileRequest request)
     {
@@ -124,10 +125,10 @@ public class UsersController: ControllerBase
         try
         {
             // 2. Execute business logic
-            var (id, responseData) = await _userService.CreateProfileAsync(request);
+            var responseData = await _userService.CreateProfileAsync(request);
 
             // 3. Return 201 Created status with location header
-            return CreatedAtAction(nameof(GetProfileById), new { id }, responseData);
+            return StatusCode(StatusCodes.Status201Created, responseData);
         }
         catch (InvalidOperationException ex)
         {
