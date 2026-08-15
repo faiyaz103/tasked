@@ -243,7 +243,7 @@ public class UserService: IUserService
             profile.FirstName,
             profile.LastName,
             profile.Phone,
-            profile.Gender
+            userGender.ToString()
         );
 
         return profileRespone;
@@ -252,14 +252,14 @@ public class UserService: IUserService
     // get
     public async Task<ProfileRespone?> GetProfileAsync(Guid id)
     {
-        var profile = await _dbContext.Profiles.FindAsync(id);
+        var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p=>p.UserId == id);
         if(profile == null) return null;
 
         return new ProfileRespone(
             profile.FirstName,
             profile.LastName,
             profile.Phone,
-            profile.Gender
+            profile.Gender.ToString()
         );
     }
 }

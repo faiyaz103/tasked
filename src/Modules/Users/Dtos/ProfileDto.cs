@@ -16,7 +16,7 @@ public record ProfileRespone(
     string firstName, 
     string lastName, 
     string phone,
-    Gender gender
+    string gender
 );
 
 // validation rule
