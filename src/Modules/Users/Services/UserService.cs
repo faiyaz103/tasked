@@ -14,6 +14,7 @@ public interface IUserService
     Task<string> CreateUserAsync(CreateUserRequest request);
     Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
     Task<TokenResponse> RotateTokensAsync(RotateTokenRequest request);
+    Task<ProfileRespone> UpdateProfileAsync(Guid id, UpdateProfileRequest request);
     Task SignOutAsync(Guid userId);
     Task<ProfileRespone?> GetProfileAsync(Guid id);
 }
@@ -254,6 +255,49 @@ public class UserService: IUserService
     {
         var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p=>p.UserId == id);
         if(profile == null) return null;
+
+        return new ProfileRespone(
+            profile.FirstName,
+            profile.LastName,
+            profile.Phone,
+            profile.Gender.ToString()
+        );
+    }
+
+    // update
+    public async Task<ProfileRespone> UpdateProfileAsync(Guid id, UpdateProfileRequest request)
+    {
+        var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p=>p.UserId == id);
+        if(profile == null)
+        {
+            throw new KeyNotFoundException("Profile does not exist.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.FirstName))
+        {
+            profile.FirstName = request.FirstName;
+        }
+        if (!string.IsNullOrWhiteSpace(request.LastName))
+        {
+            profile.LastName = request.LastName;
+        }
+        if (!string.IsNullOrWhiteSpace(request.Gender))
+        {
+            profile.Gender = Enum.Parse<Gender>(request.Gender, ignoreCase: true);
+        }
+        if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone != profile.Phone)
+        {
+            var phoneExists = await _dbContext.Profiles.AnyAsync(p=>p.Phone == request.Phone);
+            if (phoneExists)
+            {
+                throw new InvalidOperationException("phone number already exists");
+            }
+            profile.Phone = request.Phone;
+        }
+
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
 
         return new ProfileRespone(
             profile.FirstName,

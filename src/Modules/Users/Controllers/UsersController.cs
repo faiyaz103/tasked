@@ -17,18 +17,21 @@ public class UsersController: ControllerBase
     private readonly IValidator<CreateProfileRequest> _profileReqValidator;
     private readonly IValidator<CreateUserRequest> _userReqValidator;
     private readonly IValidator<SignInUserRequest> _userSignInReqValidator;
+    private readonly IValidator<UpdateProfileRequest> _profileUpdateReqValidator;
 
     public UsersController(
         IUserService userService, 
         IValidator<CreateProfileRequest> profileValidator, 
         IValidator<CreateUserRequest> userReqValidator,
-        IValidator<SignInUserRequest> userSignInReqValidator
+        IValidator<SignInUserRequest> userSignInReqValidator,
+        IValidator<UpdateProfileRequest> profileUpdateReqValidator
     )
     {
         _userService = userService;
         _profileReqValidator = profileValidator;
         _userReqValidator = userReqValidator;
         _userSignInReqValidator = userSignInReqValidator;
+        _profileUpdateReqValidator = profileUpdateReqValidator;
     }
 
     // -------------------User------------------
@@ -152,6 +155,34 @@ public class UsersController: ControllerBase
         }
 
         return Ok(user);
+    }
+
+    // update profile
+    [Authorize]
+    [HttpPatch("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest req)
+    {
+        var validationResult = await _profileUpdateReqValidator.ValidateAsync(req);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.ToDictionary());
+        }
+
+        try
+        {
+            Guid userId = User.ExtractUserId();
+            var updatedProfile = await _userService.UpdateProfileAsync(userId, req);
+
+            return Ok(updatedProfile);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new {message = ex.Message});
+        }
+        catch(InvalidOperationException ex)
+        {
+            return Conflict(new {message = ex.Message});
+        }
     }
 
 }

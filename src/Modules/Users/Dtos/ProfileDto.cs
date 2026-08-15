@@ -41,6 +41,7 @@ public class CreateProfileRequestValidator: AbstractValidator<CreateProfileReque
 
         RuleFor(x => x.phone)
         .NotEmpty().WithMessage("This field is required")
+        .Matches(@"^\+?[0-9]{7,15}$")
         .MaximumLength(20).WithMessage("Not more than 100 chars");
 
         RuleFor(x => x.gender)
@@ -63,7 +64,8 @@ public class UpdateProfileRequestValidator: AbstractValidator<UpdateProfileReque
         .When(x=>!string.IsNullOrWhiteSpace(x.LastName));
 
         RuleFor(x=>x.Phone)
-        .MaximumLength(100)
+        .MaximumLength(20).WithMessage("Must be 20 chars")
+        .Matches(@"^\+?[0-9]{7,15}$")
         .When(x=>!string.IsNullOrWhiteSpace(x.Phone));
 
         RuleFor(x=>x.Gender)
