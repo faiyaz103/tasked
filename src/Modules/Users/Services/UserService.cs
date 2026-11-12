@@ -10,12 +10,12 @@ namespace Users.Services;
 
 public interface IUserService
 {
-    string GetHelloMessage();
-
-    Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request);
+    Task<string> CheckHealthAsync();
+    Task<ProfileRespone> CreateProfileAsync(Guid id, CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
     Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
     Task<TokenResponse> RotateTokensAsync(RotateTokenRequest request);
+    Task<ProfileRespone> UpdateProfileAsync(Guid id, UpdateProfileRequest request);
     Task SignOutAsync(Guid userId);
     Task<ProfileRespone?> GetProfileAsync(Guid id);
 }
@@ -30,9 +30,11 @@ public class UserService: IUserService
         _dbContext = dbContext;
         _tokenService = tokenService;
     }
-    public string GetHelloMessage()
+
+    // health check
+    public Task<string> CheckHealthAsync()
     {
-        return "Hello from .NET !";
+        return Task.FromResult("check successful");
     }
 
     // -----------------User--------------------
@@ -121,6 +123,8 @@ public class UserService: IUserService
             await _dbContext.SaveChangesAsync();
         }
     }
+
+    // rotate tokens
     public async Task<TokenResponse> RotateTokensAsync(RotateTokenRequest request)
     {
         ClaimsPrincipal principal;
@@ -206,8 +210,16 @@ public class UserService: IUserService
 
     // -------------------Profile----------------
     // create
-    public async Task<(Guid, ProfileRespone)> CreateProfileAsync(CreateProfileRequest request)
+    public async Task<ProfileRespone> CreateProfileAsync(Guid id, CreateProfileRequest request)
     {
+        
+        //  Check if user already has a profile (Enforces the 1-to-1 relationship)
+        var profileExists = await _dbContext.Profiles.AnyAsync(p => p.UserId == id);
+        if (profileExists)
+        {
+            throw new InvalidOperationException("User already has a profile.");
+        }
+
         // validate phone
         var phoneExists = await _dbContext.Profiles.AnyAsync(
             u => u.Phone == request.phone
@@ -217,13 +229,16 @@ public class UserService: IUserService
             throw new InvalidOperationException("Phone already exists");
         }
 
+        Gender userGender = string.IsNullOrWhiteSpace(request.gender) ? Gender.Other : Enum.Parse<Gender>(request.gender, ignoreCase: true);
+
         // map dto to entity
         var profile = new Profile
         {
             FirstName = request.firstName,
             LastName = request.lastName,
+            UserId = id,
             Phone = request.phone,
-            Gender = request.gender
+            Gender = userGender
         };
 
         // create entity
@@ -236,23 +251,66 @@ public class UserService: IUserService
             profile.FirstName,
             profile.LastName,
             profile.Phone,
-            profile.Gender
+            userGender.ToString()
         );
 
-        return (profile.Id, profileRespone);
+        return profileRespone;
     }
 
     // get
     public async Task<ProfileRespone?> GetProfileAsync(Guid id)
     {
-        var profile = await _dbContext.Profiles.FindAsync(id);
+        var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p=>p.UserId == id);
         if(profile == null) return null;
 
         return new ProfileRespone(
             profile.FirstName,
             profile.LastName,
             profile.Phone,
-            profile.Gender
+            profile.Gender.ToString()
+        );
+    }
+
+    // update
+    public async Task<ProfileRespone> UpdateProfileAsync(Guid id, UpdateProfileRequest request)
+    {
+        var profile = await _dbContext.Profiles.FirstOrDefaultAsync(p=>p.UserId == id);
+        if(profile == null)
+        {
+            throw new KeyNotFoundException("Profile does not exist.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.FirstName))
+        {
+            profile.FirstName = request.FirstName;
+        }
+        if (!string.IsNullOrWhiteSpace(request.LastName))
+        {
+            profile.LastName = request.LastName;
+        }
+        if (!string.IsNullOrWhiteSpace(request.Gender))
+        {
+            profile.Gender = Enum.Parse<Gender>(request.Gender, ignoreCase: true);
+        }
+        if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone != profile.Phone)
+        {
+            var phoneExists = await _dbContext.Profiles.AnyAsync(p=>p.Phone == request.Phone);
+            if (phoneExists)
+            {
+                throw new InvalidOperationException("phone number already exists");
+            }
+            profile.Phone = request.Phone;
+        }
+
+        profile.UpdatedAt = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        return new ProfileRespone(
+            profile.FirstName,
+            profile.LastName,
+            profile.Phone,
+            profile.Gender.ToString()
         );
     }
 }

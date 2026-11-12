@@ -39,8 +39,10 @@ namespace Users.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("first_name");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("integer")
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
                         .HasColumnName("gender");
 
                     b.Property<string>("LastName")
