@@ -10,6 +10,7 @@ namespace Users.Services;
 
 public interface IUserService
 {
+    Task<string> CheckHealthAsync();
     Task<ProfileRespone> CreateProfileAsync(Guid id, CreateProfileRequest request);
     Task<string> CreateUserAsync(CreateUserRequest request);
     Task<TokenResponse> CreateUserSignInAsync(SignInUserRequest request);
@@ -28,6 +29,12 @@ public class UserService: IUserService
     {
         _dbContext = dbContext;
         _tokenService = tokenService;
+    }
+
+    // health check
+    public Task<string> CheckHealthAsync()
+    {
+        return Task.FromResult("check successful");
     }
 
     // -----------------User--------------------

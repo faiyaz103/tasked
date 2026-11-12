@@ -34,6 +34,15 @@ public class UsersController: ControllerBase
         _profileUpdateReqValidator = profileUpdateReqValidator;
     }
 
+    // health check (no auth)
+    [AllowAnonymous]
+    [HttpGet("health")]
+    public async Task<IActionResult> HealthCheck()
+    {
+        var result = await _userService.CheckHealthAsync();
+        return Ok(result);
+    }
+
     // -------------------User------------------
     // create
     [HttpPost()]
